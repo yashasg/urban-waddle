@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 1957225592}
   - component: {fileID: 1957225595}
   - component: {fileID: 1957225594}
+  - component: {fileID: 1957225596}
   m_Layer: 0
   m_Name: PlayerShip
   m_TagString: Untagged
@@ -244,3 +245,15 @@ MonoBehaviour:
   Right: 275
   Action1: 32
   Action2: 0
+--- !u!114 &1957225596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1957225591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44dec0cbf6eb6874d9a651767fccbacc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
