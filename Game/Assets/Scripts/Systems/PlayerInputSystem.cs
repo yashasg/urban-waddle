@@ -9,7 +9,7 @@ namespace Sandbox.Asteroids
     {
         protected override void OnUpdate()
         {
-            Entities.ForEach((ref PlayerMovement playerMovement, in PlayerInput playerInput) =>
+            Entities.ForEach((ref Movement playerMovement, in PlayerInput playerInput) =>
             {
                 Vector2 direction = new Vector2();
 
