@@ -1,0 +1,73 @@
+name: Build on Push
+
+on: 
+  push:
+    # Sequence of patterns matched against refs/heads
+    branches:    
+      # Push events on main branch
+      - main
+
+jobs:
+  build:
+    name: Build for ${{ matrix.targetPlatform }} on version ${{ matrix.unityVersion }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        projectPath:
+            - Game
+        unityVersion:
+            - 2022.2.6f1
+        targetPlatform:
+#            - StandaloneOSX # Build a macOS standalone (Intel 64-bit).
+            - StandaloneWindows64 # Build a Windows 64-bit standalone.
+#             - WebGL
+#            - iOS
+    env:
+      SHA8: ${{github.sha}}
+      runNumber: ${{ github.run_number }}
+
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: ${{ matrix.projectPath }}/Library
+          key: Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+          restore-keys: |
+            Library-${{ matrix.projectPath }}-${{ matrix.targetPlatform }}
+            Library-
+      # Test
+      #- name: Run tests
+      #  uses: game-ci/unity-test-runner@v2
+      #  env:
+      #    UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      #  with:
+      #    projectPath: ${{ matrix.projectPath }}
+      #    unityVersion: ${{ matrix.unityVersion }}
+      #    githubToken: ${{ secrets.GITHUB_TOKEN }}
+      
+      # Build
+      - name: Build project
+        uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          projectPath: ${{ matrix.projectPath }}
+          unityVersion: ${{ matrix.unityVersion }}
+          targetPlatform: ${{ matrix.targetPlatform }}
+          versioning: Semantic
+      
+
+
+      # output
+      - uses: actions/upload-artifact@v2
+        with:
+          name: game_${{ matrix.targetplatform }}_${{env.runnumber}}_${{env.sha8}}
+          path: build
+          retention-days: 1
