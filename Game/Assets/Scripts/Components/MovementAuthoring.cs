@@ -6,17 +6,17 @@ using Unity.Transforms;
 
 namespace Sandbox.Asteroids
 {
-    public class PlayerMovementAuthoring : MonoBehaviour
+    public class MovementAuthoring : MonoBehaviour
     {
         public float2 direction;
         public float speed;
         public float turnSpeed;
 
-        public class PlayerMovementAuthoringBaker : Baker<PlayerMovementAuthoring>
+        public class MovementAuthoringBaker : Baker<MovementAuthoring>
         {
-            public override void Bake(PlayerMovementAuthoring authoring)
+            public override void Bake(MovementAuthoring authoring)
             {
-                AddComponent(new PlayerMovement
+                AddComponent(new Movement
                 {
                     direction = authoring.direction,
                     speed = authoring.speed,
@@ -27,7 +27,7 @@ namespace Sandbox.Asteroids
     }
 
     [Serializable]
-    public struct PlayerMovement : IComponentData
+    public struct Movement : IComponentData
     {
         public float2 direction;
         public float speed;
