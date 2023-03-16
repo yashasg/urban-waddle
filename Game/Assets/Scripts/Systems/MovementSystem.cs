@@ -19,7 +19,7 @@ namespace Sandbox.Asteroids
             }).ScheduleParallel();
 
             //update rotation of asteroids
-            Entities.ForEach((ref LocalTransform transform, in Movement movement, in AsteroidTag playerTag) =>
+            Entities.ForEach((ref LocalTransform transform, in Movement movement, in AsteroidTag asteroidTag) =>
             {
                 transform.Rotation = quaternion.RotateZ(math.radians(movement.turnSpeed * deltaTime));
 
