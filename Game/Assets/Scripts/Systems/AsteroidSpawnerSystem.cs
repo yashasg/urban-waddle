@@ -9,13 +9,18 @@ namespace Sandbox.Asteroids
 {
     public partial class AsteroidSpawnerSystem : SystemBase
     {
+        private EntityQuery asteroidQuery;
+        private EntityQuery playerQuery;
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+            EntityQuery asteroidQuery = GetEntityQuery(ComponentType.ReadOnly<AsteroidTag>());
+            EntityQuery playerQuery = GetEntityQuery(ComponentType.ReadOnly<PlayerTag>(), ComponentType.ReadOnly<LocalTransform>());
+
+        }
         protected override void OnUpdate()
         {
-
-            EntityQuery asteroidQuery = GetEntityQuery(ComponentType.ReadOnly<AsteroidTag>());
             int spawnedAsteroids = asteroidQuery.CalculateEntityCount();
-
-            EntityQuery playerQuery = GetEntityQuery(ComponentType.ReadOnly<PlayerTag>(), ComponentType.ReadOnly<LocalTransform>());
             NativeArray<Entity> players = playerQuery.ToEntityArray(Allocator.Temp);
 
 
