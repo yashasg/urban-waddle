@@ -1,7 +1,7 @@
 # Project supreme-octo-meme
 
 ## Required Software
-1) Unity 2020.2.7
+1) Unity 2022.2.9f1
 2) Visual Studio 2022 Community
 3) Git
 4) Git LFS
