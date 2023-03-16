@@ -19,7 +19,6 @@ namespace Sandbox.Asteroids
         }
     }
 
-    [Serializable]
     public struct AsteroidTag : IComponentData
     {
     }

@@ -18,8 +18,6 @@ namespace Sandbox.Asteroids
             }
         }
     }
-
-    [Serializable]
     public struct PlayerTag : IComponentData
     {
     }
