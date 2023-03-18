@@ -55,7 +55,7 @@ namespace Sandbox.Asteroids
                     {
                         Value = float4x4.TRS(pos, quaternion.identity, math.float3(1.0f))
                     };
-                    
+
                     localToWorldComponentLookup[asteroid] = localToWorld;
 
                     //update transform
