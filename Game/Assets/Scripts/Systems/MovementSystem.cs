@@ -21,9 +21,11 @@ namespace Sandbox.Asteroids
 
                 //update rotation
                 quaternion rotation = quaternion.RotateZ(math.radians(movement.turnSpeed * deltaTime));
+
+
                 var localToWorld = new LocalToWorld
                 {
-                    Value = float4x4.TRS(newPosition, rotation, math.float3(1.0f))
+                    Value = float4x4.TRS(newPosition, transform.Rotation, math.float3(1.0f))
                 };
                 transform = localToWorld;
             }).ScheduleParallel(Dependency);

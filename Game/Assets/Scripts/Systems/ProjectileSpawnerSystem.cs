@@ -19,19 +19,21 @@ namespace Sandbox.Asteroids
             [ReadOnly]
             public PlayerShip playerShip;
             [ReadOnly]
-            public Entity player;
+            public Entity shipEntity;
             [ReadOnly]
             public Entity spawnedProjectile;
 
             public void Execute()
             {
-                float3 playerPos = localtoWorldLookup[player].Position;
-                float3 playerDir = math.float3(movementLookup[player].direction,0);
+                LocalToWorld shipLocalToWorld = localtoWorldLookup[shipEntity];
+                float3 playerPos = localtoWorldLookup[shipEntity].Position;
+                float3 playerDir = math.normalizesafe( math.float3(movementLookup[shipEntity].direction,0));
+                float3 projectileDir = playerDir.Equals(float3.zero) ? math.up() : playerDir;
                 float3 turretOffset = playerShip.turretOffset;
 
 
                 float3 projectilePos = playerPos + turretOffset;
-                quaternion rotation = quaternion.LookRotationSafe(math.forward(), playerDir);
+                quaternion rotation = quaternion.LookRotationSafe(math.forward(), projectileDir);
                 var localToWorld = new LocalToWorld
                 {
                     Value = float4x4.TRS(projectilePos, rotation, math.float3(1.0f))
@@ -41,7 +43,7 @@ namespace Sandbox.Asteroids
 
                 //update direction
                 Movement movement = movementLookup[spawnedProjectile];
-                movement.direction = math.float2(playerDir.x,playerDir.y);
+                movement.direction = math.float2(projectileDir.x, projectileDir.y);
                 movementLookup[spawnedProjectile] = movement;
 
             }
@@ -108,7 +110,7 @@ namespace Sandbox.Asteroids
                     localtoWorldLookup = GetComponentLookup<LocalToWorld>(),
                     movementLookup = GetComponentLookup<Movement>(),
                     playerShip = GetComponentLookup<PlayerShip>()[localPlayer],
-                    player = localPlayer,
+                    shipEntity = localPlayer,
                     spawnedProjectile = spawnedProjectile
 
                 }.Schedule();
