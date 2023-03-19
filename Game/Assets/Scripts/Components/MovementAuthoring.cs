@@ -6,6 +6,7 @@ using Unity.Transforms;
 
 namespace Sandbox.Asteroids
 {
+    [RequireComponent(typeof(SpriteRenderer))]
     public class MovementAuthoring : MonoBehaviour
     {
         public float2 direction;
@@ -20,13 +21,14 @@ namespace Sandbox.Asteroids
                 {
                     direction = authoring.direction,
                     speed = authoring.speed,
-                    turnSpeed = authoring.turnSpeed,
+                    turnSpeed = authoring.turnSpeed
                 });
             }
         }
     }
 
     [Serializable]
+    [WriteGroup(typeof(LocalToWorld))]
     public struct Movement : IComponentData
     {
         public float2 direction;

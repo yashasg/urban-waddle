@@ -37,9 +37,9 @@ namespace Sandbox.Asteroids
 
 
                 //update transform
-                LocalTransform transform = localTransformLookup[asteroid];
-                transform.Position = pos;
-                localTransformLookup[asteroid] = transform;
+                //LocalTransform transform = localTransformLookup[asteroid];
+                //transform.Position = pos;
+                //localTransformLookup[asteroid] = transform;
 
 
                 //update direction

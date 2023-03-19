@@ -138,6 +138,7 @@ GameObject:
   - component: {fileID: 1957225596}
   - component: {fileID: 1957225598}
   - component: {fileID: 1957225597}
+  - component: {fileID: 1957225599}
   m_Layer: 0
   m_Name: PlayerShip
   m_TagString: Untagged
@@ -185,7 +186,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: -1787897279
   m_SortingLayer: 1
-  m_SortingOrder: 0
+  m_SortingOrder: 100
   m_Sprite: {fileID: 21300000, guid: ae58f6792a1084e41abb789f61b02738, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -453,3 +454,18 @@ MonoBehaviour:
     Tag05: 0
     Tag06: 0
     Tag07: 0
+--- !u!114 &1957225599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1957225591}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 09d392de392e60044a4f2f81d93975d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 100
+  shieldDuration: 10
+  spriteRenderer: {fileID: 1957225592}
