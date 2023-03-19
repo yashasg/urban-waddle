@@ -3,13 +3,14 @@ using Unity.Jobs;
 using Unity.Physics;
 using Unity.Collections;
 using UnityEngine.Rendering;
+using Unity.Physics.Systems;
 
 namespace Sandbox.Asteroids
 {
+    [UpdateInGroup(typeof(PhysicsSystemGroup))]
+    [UpdateAfter(typeof(PhysicsSimulationGroup))]
     public partial class PickupTriggerSystem : SystemBase
     {
-        private EndSimulationEntityCommandBufferSystem.Singleton endSimulationEntityCommandBufferSystem;
-
         struct PickupOnTriggerSystemJob : ITriggerEventsJob
         {
             [ReadOnly]
@@ -47,19 +48,21 @@ namespace Sandbox.Asteroids
                 Entity pickupEntity = isEntityAPickup ? entityA : entityB;
                 Entity playerEntity = isEntityAPlayer ? entityA : entityB;
 
+                UnityEngine.Debug.Log((isEntityAPickup ? "PickupEntityA " : "PickupEntityB ") + "collided with " + (isEntityAPlayer ? "PlayerA" : "PlayerB"));
+
                 commandBuffer.DestroyEntity(pickupEntity);
 
-                //UnityEngine.Debug.Log((isEntityAPickup ? "PickupEntityA " : "PickupEntityB ") + "collided with " + (isEntityAPlayer ? "PlayerA" : "PlayerB"));
+
             }
         }
 
         protected override void OnCreate()
         {
             base.OnCreate();
-            endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
         }
         protected override void OnUpdate()
         {
+            var endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             EntityCommandBuffer commandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer(World.Unmanaged);
             var pickupJob = new PickupOnTriggerSystemJob
             {

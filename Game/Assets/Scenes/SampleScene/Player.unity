@@ -228,7 +228,7 @@ MonoBehaviour:
   direction:
     x: 0
     y: 0
-  speed: 8
+  speed: 4.75
   turnSpeed: 10
 --- !u!114 &1957225595
 MonoBehaviour:
@@ -283,7 +283,7 @@ MonoBehaviour:
     z: 0.8
   m_PrimitiveOrientation:
     Value:
-      x: 90
+      x: -90
       y: 0
       z: 0
     RotationOrder: 4

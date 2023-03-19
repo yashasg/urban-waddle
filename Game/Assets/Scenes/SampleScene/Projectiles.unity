@@ -154,7 +154,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bullet: {fileID: 1245215546607549528, guid: a2d9c89de8d94614eb12605814bfd612, type: 3}
   missle: {fileID: 0}
-  timeBetweenProjectilesMS: 100
+  timeBetweenProjectilesMS: 200
 --- !u!4 &273252202
 Transform:
   m_ObjectHideFlags: 0

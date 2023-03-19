@@ -26,20 +26,20 @@ namespace Sandbox.Asteroids
             public void Execute()
             {
                 LocalToWorld shipLocalToWorld = localtoWorldLookup[shipEntity];
-                float3 playerPos = localtoWorldLookup[shipEntity].Position;
-                float3 playerDir = math.normalizesafe( math.float3(movementLookup[shipEntity].direction,0));
-                float3 projectileDir = playerDir.Equals(float3.zero) ? math.up() : playerDir;
+                float3 playerPos = shipLocalToWorld.Position;
+                quaternion playerRot = shipLocalToWorld.Rotation;
+                float3 projectileDir = math.mul(playerRot,math.up()); //get the direction based on the player rotation
                 float3 turretOffset = playerShip.turretOffset;
 
-
-                float3 projectilePos = playerPos + turretOffset;
-                quaternion rotation = quaternion.LookRotationSafe(math.forward(), projectileDir);
+              
+                float3 projectilePos = playerPos + (projectileDir * turretOffset.y);
+                
                 var localToWorld = new LocalToWorld
                 {
-                    Value = float4x4.TRS(projectilePos, rotation, math.float3(1.0f))
+                    Value = float4x4.TRS(projectilePos, playerRot, math.float3(1.0f))
                 };
-                localtoWorldLookup[spawnedProjectile] = localToWorld;
 
+                localtoWorldLookup[spawnedProjectile] = localToWorld;
 
                 //update direction
                 Movement movement = movementLookup[spawnedProjectile];
