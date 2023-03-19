@@ -10,7 +10,6 @@ namespace Sandbox.Asteroids
     {
         struct AsteroidSpawnerSystemPlacementJob : IJobFor
         {
-            public ComponentLookup<LocalToWorld> localtoWorldLookup;
             public ComponentLookup<LocalTransform> localTransformLookup;
             public ComponentLookup<Movement> movementLookup;
 
@@ -27,24 +26,17 @@ namespace Sandbox.Asteroids
                 uint seed = (uint)(asteroid.Index + index + 1) * 0x9F6ABC1;
                 var random = new Random(seed);
                 var dir = math.float3(math.normalizesafe(random.NextFloat2()),0);
-                var pos = float3.zero + (dir * spawnerRadius);
-                var localToWorld = new LocalToWorld
-                {
-                    Value = float4x4.TRS(pos, quaternion.LookRotationSafe(math.forward(), dir), math.float3(1.0f))
-                };
-                localtoWorldLookup[asteroid] = localToWorld;
-
+                var pos = dir * spawnerRadius;
+                var TRS = float4x4.TRS(pos, quaternion.LookRotationSafe(math.forward(), dir), math.float3(1.0f));
 
 
                 //update transform
-                LocalTransform transform = localTransformLookup[asteroid];
-                transform.Position = pos;
-                localTransformLookup[asteroid] = transform;
+                localTransformLookup[asteroid] = LocalTransform.FromMatrix(TRS);
 
 
                 //update direction
                 Movement movement = movementLookup[asteroid];
-                float3 asteroidDirection = math.normalizesafe(float3.zero - pos);
+                float3 asteroidDirection = math.normalizesafe(-dir);
                 movement.direction = math.float2(asteroidDirection.x, asteroidDirection.y);
 
                 movementLookup[asteroid] = movement;
@@ -88,7 +80,6 @@ namespace Sandbox.Asteroids
                 //update the position of the spawned entities
                 Dependency = new AsteroidSpawnerSystemPlacementJob
                 {
-                    localtoWorldLookup = GetComponentLookup<LocalToWorld>(),
                     localTransformLookup = GetComponentLookup<LocalTransform>(),
                     movementLookup = GetComponentLookup<Movement>(),
                     asteroids = asteroidEntities,
