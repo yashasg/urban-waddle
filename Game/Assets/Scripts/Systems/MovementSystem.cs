@@ -34,6 +34,7 @@ namespace Sandbox.Asteroids
                 //HACK - the LookRotationSafe function uses Z axis as forward, which causes a 2d sprites to behave weird in this situation
                 //the solution was to swap the arguments
                 quaternion targetRot = quaternion.LookRotationSafe(math.forward(), normalizedDirection);
+
                 transform.Rotation = math.slerp(transform.Rotation, targetRot, movement.turnSpeed * deltaTime);
 
             }).Run();
