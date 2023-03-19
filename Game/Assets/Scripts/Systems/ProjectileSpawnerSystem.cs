@@ -12,7 +12,7 @@ namespace Sandbox.Asteroids
     {
         struct ProjectileSpawnerSystemPlacementJob : IJob
         {
-            public ComponentLookup<LocalToWorld> localtoWorldLookup;
+            public ComponentLookup<LocalTransform> localTransformLookup;
             public ComponentLookup<Movement> movementLookup;
 
 
@@ -25,21 +25,24 @@ namespace Sandbox.Asteroids
 
             public void Execute()
             {
-                LocalToWorld shipLocalToWorld = localtoWorldLookup[shipEntity];
-                float3 playerPos = shipLocalToWorld.Position;
-                quaternion playerRot = shipLocalToWorld.Rotation;
+                LocalTransform shipLocalTransform = localTransformLookup[shipEntity];
+                float3 playerPos = shipLocalTransform.Position;
+                quaternion playerRot = shipLocalTransform.Rotation;
+
                 float3 projectileDir = math.mul(playerRot,math.up()); //get the direction based on the player rotation
                 float3 turretOffset = playerShip.turretOffset;
 
               
                 float3 projectilePos = playerPos + (projectileDir * turretOffset.y);
-                
-                var localToWorld = new LocalToWorld
-                {
-                    Value = float4x4.TRS(projectilePos, playerRot, math.float3(1.0f))
-                };
+                var TRS = float4x4.TRS(projectilePos, playerRot, math.float3(1.0f));
 
-                localtoWorldLookup[spawnedProjectile] = localToWorld;
+                //var localToWorld = new LocalToWorld
+                //{
+                //    Value = TRS
+                //};
+
+                //localTransformLookup[spawnedProjectile] = localToWorld;
+                localTransformLookup[spawnedProjectile] = LocalTransform.FromMatrix(TRS);
 
                 //update direction
                 Movement movement = movementLookup[spawnedProjectile];
@@ -107,7 +110,7 @@ namespace Sandbox.Asteroids
                 //update the position of the spawned entities
                 Dependency = new ProjectileSpawnerSystemPlacementJob
                 {
-                    localtoWorldLookup = GetComponentLookup<LocalToWorld>(),
+                    localTransformLookup = GetComponentLookup<LocalTransform>(),
                     movementLookup = GetComponentLookup<Movement>(),
                     playerShip = GetComponentLookup<PlayerShip>()[localPlayer],
                     shipEntity = localPlayer,

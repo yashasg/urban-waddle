@@ -283,7 +283,7 @@ MonoBehaviour:
     z: 0.8
   m_PrimitiveOrientation:
     Value:
-      x: -90
+      x: 90
       y: 0
       z: 0
     RotationOrder: 4

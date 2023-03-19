@@ -27,7 +27,7 @@ namespace Sandbox.Asteroids
                 bool isEntityAPickup = allPickups.HasComponent(entityA);
                 bool isEntityBPickup = allPickups.HasComponent(entityB);
 
-                if((isEntityAPickup == false) && (isEntityBPickup == false))
+                if ((isEntityAPickup == false) && (isEntityBPickup == false))
                 {
                     //neither of the entities are pickup
                     //we dont handle this here

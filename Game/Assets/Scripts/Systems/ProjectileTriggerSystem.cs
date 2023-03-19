@@ -11,20 +11,18 @@ namespace Sandbox.Asteroids
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
     public partial class ProjectileTriggerSystem : SystemBase
     {
-        private 
-
-        struct ProjectileOnTriggerSystemJob : ITriggerEventsJob
+        struct OnTriggerSystemJob : ITriggerEventsJob
         {
+
             [ReadOnly]
             public ComponentLookup<Projectile> allProjectiles;
             [ReadOnly]
             public ComponentLookup<Asteroid> allAsteroids;
 
             public EntityCommandBuffer commandBuffer;
-            public void Execute(TriggerEvent triggerEvent)
+
+            bool HandleProjectileTrigger(Entity entityA, Entity entityB)
             {
-                Entity entityA = triggerEvent.EntityA;
-                Entity entityB = triggerEvent.EntityB;
 
                 bool isEntityAProjectile = allProjectiles.HasComponent(entityA);
                 bool isEntityBProjectile = allProjectiles.HasComponent(entityB);
@@ -33,28 +31,41 @@ namespace Sandbox.Asteroids
                 {
                     //neither of the entities are projectile
                     //we dont handle this here
-                    return;
+                    return false;
                 }
 
                 /* ignore same kind collisions*/
                 if (isEntityAProjectile && isEntityBProjectile)
                 {
-                    return;
+                    return false;
                 }
 
                 bool isEntityAAsteroid = allAsteroids.HasComponent(entityA);
                 bool isEntityBAsteroid = allAsteroids.HasComponent(entityB);
                 if (isEntityAAsteroid && isEntityBAsteroid)
                 {
-                    return;
+                    return false;
                 }
                 Entity projectileEntity = isEntityAProjectile ? entityA : entityB;
                 Entity asteroidEntity = isEntityAAsteroid ? entityA : entityB;
 
                 commandBuffer.DestroyEntity(projectileEntity);
-                //commandBuffer.DestroyEntity(asteroidEntity);
+                commandBuffer.DestroyEntity(asteroidEntity);
 
-                UnityEngine.Debug.Log((isEntityAProjectile ? "ProjectileEntityA " : "ProjectileEntityB ") + "collided with " + (isEntityAAsteroid ? "AsteroidA" : "AsteroidB"));
+                UnityEngine.Debug.LogFormat("ProjectileEntity {0} collided with AsteroidEntity {1}", projectileEntity.Index, asteroidEntity.Index);
+
+                return true;
+            }
+        
+
+            public void Execute(TriggerEvent triggerEvent)
+            {
+                Entity entityA = triggerEvent.EntityA;
+                Entity entityB = triggerEvent.EntityB;
+               if(HandleProjectileTrigger(entityA,entityB))
+                {
+                    return;
+                }
             }
         }
 
@@ -66,10 +77,12 @@ namespace Sandbox.Asteroids
         {
             var endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             EntityCommandBuffer commandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer(World.Unmanaged);
-            var projectileJob = new ProjectileOnTriggerSystemJob
+            var projectileJob = new OnTriggerSystemJob
             {
+
                 allProjectiles = GetComponentLookup<Projectile>(true /*isreadonly*/),
                 allAsteroids = GetComponentLookup<Asteroid>(true /*isreadonly*/),
+
                 commandBuffer = commandBuffer
 
             }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), Dependency);

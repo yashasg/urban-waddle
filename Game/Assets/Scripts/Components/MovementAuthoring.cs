@@ -28,7 +28,7 @@ namespace Sandbox.Asteroids
     }
 
     [Serializable]
-    [WriteGroup(typeof(LocalToWorld))]
+    [WriteGroup(typeof(LocalTransform))]
     public struct Movement : IComponentData
     {
         public float2 direction;
