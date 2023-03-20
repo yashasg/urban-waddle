@@ -81,7 +81,7 @@ namespace Sandbox.Asteroids
         {
             var endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             EntityCommandBuffer commandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer(World.Unmanaged);
-            var projectileJob = new OnTriggerSystemJob
+            Dependency = new OnTriggerSystemJob
             {
 
                 allProjectiles = GetComponentLookup<Projectile>(true /*isreadonly*/),
@@ -90,7 +90,6 @@ namespace Sandbox.Asteroids
                 commandBuffer = commandBuffer
 
             }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), Dependency);
-            projectileJob.Complete();
 
         }
     }

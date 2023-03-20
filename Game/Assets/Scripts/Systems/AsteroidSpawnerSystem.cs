@@ -5,15 +5,20 @@ using Unity.Jobs;
 using Unity.Transforms;
 using Unity.Burst;
 using UnityEngine;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace Sandbox.Asteroids
 {
     public partial class AsteroidSpawnerSystem : SystemBase
     {
         [BurstCompile]
-        struct AsteroidSpawnerSystemPlacementJob : IJobFor
+        struct AsteroidSpawnerSystemPlacementJob : IJobParallelFor
         {
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
             public ComponentLookup<LocalTransform> localTransformLookup;
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
             public ComponentLookup<Movement> movementLookup;
 
             [ReadOnly]
@@ -31,8 +36,8 @@ namespace Sandbox.Asteroids
                 float posX = topLeft.x ? spawnerRect.c0.x : spawnerRect.c0.y;
                 float posY = topLeft.y ? spawnerRect.c1.y : spawnerRect.c1.x;
                 var pos = math.float3(posX,posY,0);
-
-                var dir = math.float3(math.normalizesafe(random.NextFloat2()), 0);
+                var dest = math.float3(random.NextFloat(spawnerRect.c0.x, spawnerRect.c0.y), random.NextFloat(spawnerRect.c1.x, spawnerRect.c1.y), 0);
+                var dir = math.normalizesafe(dest - pos);
 
                 var TRS = float4x4.TRS(pos, quaternion.identity, math.float3(1.0f));
 
@@ -110,10 +115,7 @@ namespace Sandbox.Asteroids
                     asteroids = asteroidEntities,
                     spawnerRect = spawner.spawnRect + math.float2x2(left, bottom, right, top)
 
-                }.Schedule(entitiesToSpawn, Dependency);
-
-
-                Dependency.Complete();
+                }.Schedule(entitiesToSpawn,50, Dependency);
             }
 
         }

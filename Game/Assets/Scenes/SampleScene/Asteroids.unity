@@ -162,7 +162,7 @@ MonoBehaviour:
     y: -2
     width: 2
     height: 2
-  asteroidCountPerSession: 10
+  asteroidCountPerSession: 5
 --- !u!4 &2010021185
 Transform:
   m_ObjectHideFlags: 0

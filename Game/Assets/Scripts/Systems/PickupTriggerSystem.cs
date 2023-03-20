@@ -67,14 +67,13 @@ namespace Sandbox.Asteroids
         {
             var endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             EntityCommandBuffer commandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer(World.Unmanaged);
-            var pickupJob = new PickupOnTriggerSystemJob
+            Dependency = new PickupOnTriggerSystemJob
             {
                 allPickups = GetComponentLookup<Pickup>(true /*isreadonly*/),
                 allPlayers = GetComponentLookup<PlayerTag>(true /*isreadonly*/),
                 commandBuffer = commandBuffer
 
             }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), Dependency);
-            pickupJob.Complete();
 
         }
     }
