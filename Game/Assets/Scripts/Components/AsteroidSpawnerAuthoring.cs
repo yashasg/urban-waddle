@@ -10,7 +10,7 @@ namespace Sandbox.Asteroids
         public GameObject asteroidMed;
         public GameObject asteroidSmall;
         public GameObject asteroidTiny;
-        public float spawnRadius;
+        public Rect spawnRectDelta;
         public int asteroidCountPerSession;
 
         public class AsteroidSpawnerAuthoringBaker : Baker<AsteroidSpawnerAuthoring>
@@ -25,7 +25,8 @@ namespace Sandbox.Asteroids
                     asteroidTiny = GetEntity(authoring.asteroidTiny),
 
                     asteroidCountPerSession = authoring.asteroidCountPerSession,
-                    spawnRadius = authoring.spawnRadius,
+                    spawnRect = math.float2x2(authoring.spawnRectDelta.xMin, authoring.spawnRectDelta.yMin,
+                                                authoring.spawnRectDelta.xMax, authoring.spawnRectDelta.yMax)
                 }) ;
 
 
@@ -40,7 +41,7 @@ namespace Sandbox.Asteroids
         public Entity asteroidMed;
         public Entity asteroidSmall;
         public Entity asteroidTiny;
-        public float spawnRadius;
+        public float2x2 spawnRect;
         public int asteroidCountPerSession;
 
     }

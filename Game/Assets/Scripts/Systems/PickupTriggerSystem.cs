@@ -4,6 +4,7 @@ using Unity.Physics;
 using Unity.Collections;
 using UnityEngine.Rendering;
 using Unity.Physics.Systems;
+using Unity.Burst;
 
 namespace Sandbox.Asteroids
 {
@@ -11,6 +12,7 @@ namespace Sandbox.Asteroids
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
     public partial class PickupTriggerSystem : SystemBase
     {
+        [BurstCompile]
         struct PickupOnTriggerSystemJob : ITriggerEventsJob
         {
             [ReadOnly]
@@ -48,18 +50,19 @@ namespace Sandbox.Asteroids
                 Entity pickupEntity = isEntityAPickup ? entityA : entityB;
                 Entity playerEntity = isEntityAPlayer ? entityA : entityB;
 
-                UnityEngine.Debug.Log((isEntityAPickup ? "PickupEntityA " : "PickupEntityB ") + "collided with " + (isEntityAPlayer ? "PlayerA" : "PlayerB"));
+                //UnityEngine.Debug.Log((isEntityAPickup ? "PickupEntityA " : "PickupEntityB ") + "collided with " + (isEntityAPlayer ? "PlayerA" : "PlayerB"));
 
                 commandBuffer.DestroyEntity(pickupEntity);
 
 
             }
         }
-
+        [BurstCompile]
         protected override void OnCreate()
         {
             base.OnCreate();
         }
+        [BurstCompile]
         protected override void OnUpdate()
         {
             var endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
