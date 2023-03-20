@@ -10,7 +10,7 @@ namespace Sandbox.Asteroids
 {
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
-    public partial class HyperDriveSystem : SystemBase
+    public partial class ProjectileDestroySystem : SystemBase
     {
 
         private EntityQuery projectileQuery;
@@ -22,6 +22,7 @@ namespace Sandbox.Asteroids
 
             cameraQuery = GetEntityQuery(ComponentType.ReadOnly<Camera>());
             projectileQuery = GetEntityQuery(ComponentType.ReadOnly<Projectile>(), ComponentType.ReadOnly<LocalTransform>());
+
             destroyQuery = GetEntityQuery(ComponentType.ReadOnly<DestroyTag>());
 
 
@@ -29,14 +30,14 @@ namespace Sandbox.Asteroids
         protected override void OnUpdate()
         {
             var cameras = cameraQuery.ToEntityArray(Allocator.Temp);
-         
-            if(cameras.Length < 1)
+
+            if (cameras.Length < 1)
             {
-                //can find any cameras on screen
+                //cant find any cameras on screen
                 return;
             }
 
-           Camera mainCamera = EntityManager.GetComponentObject<Camera>(cameras[0]);
+            Camera mainCamera = EntityManager.GetComponentObject<Camera>(cameras[0]);
 
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(World.Unmanaged);
@@ -44,55 +45,53 @@ namespace Sandbox.Asteroids
 
             //projectiles dont hyperdrive so we destroy them
             var projectiles = projectileQuery.ToEntityArray(Allocator.Temp);
-            
-            for (int i =0; i < projectiles.Length; ++i) 
-            {                
+            var transformLookup = GetComponentLookup<LocalTransform>();
+            for (int i = 0; i < projectiles.Length; ++i)
+            {
                 var projectile = projectiles[i];
-                var localTransform = GetComponentLookup<LocalTransform>()[projectile];
-                
-                if (!IsOutOfBounds(localTransform, mainCamera))
+                var localTransform = transformLookup[projectile];
+                var viewportPoint = GetViewportPoint(localTransform.Position, mainCamera);
+                if (!IsOutOfBounds(viewportPoint))
                 {
                     continue;
                 }
                 ecb.AddComponent<DestroyTag>(projectile);
 
             }
-
-
             //destroy all entities that we tagged with destroytag
             Dependency = new DestroyJob
             {
                 // Note the function call required to get a parallel writer for an EntityCommandBuffer.
                 ECB = ecb.AsParallelWriter(),
-            }.ScheduleParallel(Dependency);
+            }.ScheduleParallel(destroyQuery, Dependency);
             Dependency.Complete();
 
         }
 
-        private bool IsOutOfBounds(LocalTransform transform,Camera mainCamera)
+        private Vector3 GetViewportPoint(in float3 worldPos, in Camera mainCamera)
         {
-            float3 projectilePos = transform.Position;
-            Vector3 worldPoint = new Vector3(projectilePos.x, projectilePos.y, mainCamera.nearClipPlane);
+            Vector3 worldPoint = new Vector3(worldPos.x, worldPos.y, mainCamera.nearClipPlane);
+            return mainCamera.WorldToViewportPoint(worldPoint);
+        }
+        private bool IsOutOfBoundsX(in Vector3 viewportPoint)
+        {
+            return (viewportPoint.x < 0 || viewportPoint.x > 1);
+        }
+        private bool IsOutOfBoundsY(in Vector3 viewportPoint)
+        {
 
-            Vector3 viewportPoint = mainCamera.WorldToViewportPoint(worldPoint);
-
-            if (viewportPoint.x < 0 || viewportPoint.x > 1)
-            {
-                return true;
-            }
-            if (viewportPoint.y < 0 || viewportPoint.y > 1)
-            {
-                return true;
-            }
-
-            return false;
+            return (viewportPoint.y < 0 || viewportPoint.y > 1);
+        }
+        private bool IsOutOfBounds(Vector3 viewportPoint)
+        {
+            return IsOutOfBoundsX(viewportPoint) || IsOutOfBoundsY(viewportPoint);
         }
 
 
         partial struct DestroyJob : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter ECB;
-            void Execute([ChunkIndexInQuery] int chunkIndex, in Entity entity, in DestroyTag destroyTag)
+            void Execute([ChunkIndexInQuery] int chunkIndex, in Entity entity)
             {
                  ECB.DestroyEntity(chunkIndex,entity);
             }
