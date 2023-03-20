@@ -116,9 +116,7 @@ namespace Sandbox.Asteroids
                     shipEntity = localPlayer,
                     spawnedProjectile = spawnedProjectile
 
-                }.Schedule();
-
-                Dependency.Complete();
+                }.Schedule(Dependency);
             }
 
 
