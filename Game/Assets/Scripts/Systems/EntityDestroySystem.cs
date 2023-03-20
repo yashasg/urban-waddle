@@ -66,6 +66,7 @@ namespace Sandbox.Asteroids
             }.ScheduleParallel(projectileQuery, Dependency);
 
             Dependency.Complete();
+
             Dependency = new DestroySystemDestroyJob
             {
                 top = top + 2,
