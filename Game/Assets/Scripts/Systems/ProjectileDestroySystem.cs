@@ -5,6 +5,7 @@ using Unity.Jobs;
 using Unity.Transforms;
 using UnityEngine;
 using Unity.Physics.Systems;
+using Unity.Burst;
 
 namespace Sandbox.Asteroids
 {
@@ -15,7 +16,8 @@ namespace Sandbox.Asteroids
 
         private EntityQuery projectileQuery;
         private EntityQuery cameraQuery;
-        private EntityQuery destroyQuery;
+        
+        [BurstCompile]
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -23,10 +25,8 @@ namespace Sandbox.Asteroids
             cameraQuery = GetEntityQuery(ComponentType.ReadOnly<Camera>());
             projectileQuery = GetEntityQuery(ComponentType.ReadOnly<Projectile>(), ComponentType.ReadOnly<LocalTransform>());
 
-            destroyQuery = GetEntityQuery(ComponentType.ReadOnly<DestroyTag>());
-
-
         }
+        [BurstCompile]
         protected override void OnUpdate()
         {
             var cameras = cameraQuery.ToEntityArray(Allocator.Temp);
@@ -38,62 +38,61 @@ namespace Sandbox.Asteroids
             }
 
             Camera mainCamera = EntityManager.GetComponentObject<Camera>(cameras[0]);
+            float cameraDistZ = math.abs(mainCamera.transform.position.z);
+
+
+            Vector3 bottomLeft = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, cameraDistZ));
+            Vector3 topRight = mainCamera.ViewportToWorldPoint(new Vector3(1, 1, cameraDistZ));
+
+            float top = topRight.y;
+            float right = topRight.x;
+
+            float bottom = bottomLeft.y;
+            float left = bottomLeft.x;
 
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(World.Unmanaged);
 
-
-            //projectiles dont hyperdrive so we destroy them
-            var projectiles = projectileQuery.ToEntityArray(Allocator.Temp);
-            var transformLookup = GetComponentLookup<LocalTransform>();
-            for (int i = 0; i < projectiles.Length; ++i)
-            {
-                var projectile = projectiles[i];
-                var localTransform = transformLookup[projectile];
-                var viewportPoint = GetViewportPoint(localTransform.Position, mainCamera);
-                if (!IsOutOfBounds(viewportPoint))
-                {
-                    continue;
-                }
-                ecb.AddComponent<DestroyTag>(projectile);
-
-            }
             //destroy all entities that we tagged with destroytag
-            Dependency = new DestroyJob
+            Dependency = new ProjectileDestroySystemDestroyJob
             {
                 // Note the function call required to get a parallel writer for an EntityCommandBuffer.
+                top = top,
+                left = left,
+                bottom = bottom,
+                right = right,
                 ECB = ecb.AsParallelWriter(),
-            }.ScheduleParallel(destroyQuery, Dependency);
+            }.ScheduleParallel(projectileQuery, Dependency);
             Dependency.Complete();
 
         }
+        [BurstCompile]
+        partial struct ProjectileDestroySystemDestroyJob : IJobEntity
+        {
+            public float top;
+            public float left;
+            public float bottom;
+            public float right;
 
-        private Vector3 GetViewportPoint(in float3 worldPos, in Camera mainCamera)
-        {
-            Vector3 worldPoint = new Vector3(worldPos.x, worldPos.y, mainCamera.nearClipPlane);
-            return mainCamera.WorldToViewportPoint(worldPoint);
-        }
-        private bool IsOutOfBoundsX(in Vector3 viewportPoint)
-        {
-            return (viewportPoint.x < 0 || viewportPoint.x > 1);
-        }
-        private bool IsOutOfBoundsY(in Vector3 viewportPoint)
-        {
-
-            return (viewportPoint.y < 0 || viewportPoint.y > 1);
-        }
-        private bool IsOutOfBounds(Vector3 viewportPoint)
-        {
-            return IsOutOfBoundsX(viewportPoint) || IsOutOfBoundsY(viewportPoint);
-        }
-
-
-        partial struct DestroyJob : IJobEntity
-        {
             public EntityCommandBuffer.ParallelWriter ECB;
-            void Execute([ChunkIndexInQuery] int chunkIndex, in Entity entity)
+            void Execute([ChunkIndexInQuery] int chunkIndex,in LocalTransform transform, in Entity entity)
             {
-                 ECB.DestroyEntity(chunkIndex,entity);
+
+                bool bDestroy = false;
+
+                float3 pos = transform.Position;
+
+
+                bDestroy = pos.x < left;
+                bDestroy = pos.x > right;
+                bDestroy = pos.y < bottom;
+                bDestroy = pos.y > top;
+
+                if(bDestroy)
+                {
+                    ECB.DestroyEntity(chunkIndex, entity);
+                }
+                
             }
         }
     }

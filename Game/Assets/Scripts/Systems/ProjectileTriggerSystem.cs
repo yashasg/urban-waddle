@@ -4,6 +4,7 @@ using Unity.Physics;
 using Unity.Collections;
 using UnityEngine.Rendering;
 using Unity.Physics.Systems;
+using Unity.Burst;
 
 namespace Sandbox.Asteroids
 {
@@ -11,6 +12,7 @@ namespace Sandbox.Asteroids
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
     public partial class ProjectileTriggerSystem : SystemBase
     {
+        [BurstCompile]
         struct OnTriggerSystemJob : ITriggerEventsJob
         {
 
@@ -52,7 +54,7 @@ namespace Sandbox.Asteroids
                 commandBuffer.DestroyEntity(projectileEntity);
                 commandBuffer.DestroyEntity(asteroidEntity);
 
-                UnityEngine.Debug.LogFormat("ProjectileEntity {0} collided with AsteroidEntity {1}", projectileEntity.Index, asteroidEntity.Index);
+                //UnityEngine.Debug.LogFormat("ProjectileEntity {0} collided with AsteroidEntity {1}", projectileEntity.Index, asteroidEntity.Index);
 
                 return true;
             }
@@ -69,10 +71,12 @@ namespace Sandbox.Asteroids
             }
         }
 
+        [BurstCompile]
         protected override void OnCreate()
         {
             base.OnCreate();
         }
+        [BurstCompile]
         protected override void OnUpdate()
         {
             var endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();

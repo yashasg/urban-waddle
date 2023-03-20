@@ -3,11 +3,13 @@ using Unity.Mathematics;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Transforms;
+using Unity.Burst;
 
 namespace Sandbox.Asteroids
 {
     public partial class AsteroidSpawnerSystem : SystemBase
     {
+        [BurstCompile]
         struct AsteroidSpawnerSystemPlacementJob : IJobFor
         {
             public ComponentLookup<LocalTransform> localTransformLookup;
@@ -46,7 +48,8 @@ namespace Sandbox.Asteroids
 
         private EntityQuery asteroidSpawnerQuery;
         private EntityQuery asteroidQuery;
-        
+
+        [BurstCompile]
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -56,6 +59,7 @@ namespace Sandbox.Asteroids
 
 
         }
+        [BurstCompile]
         protected override void OnUpdate()
         {
             int spawnedAsteroids = asteroidQuery.CalculateEntityCount();

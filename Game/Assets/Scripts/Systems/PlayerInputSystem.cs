@@ -32,14 +32,6 @@ namespace Sandbox.Asteroids
 
                 playerMovement.direction.x = direction.x;
                 playerMovement.direction.y = direction.y;
-                //if (Input.GetKey(playerInput.Action1))
-                //{
-                //    direction += Vector2.up;
-                //}
-                //if (Input.GetKey(playerInput.Up))
-                //{
-                //    direction += Vector2.up;
-                //}
             }).Run();
         }
     }
