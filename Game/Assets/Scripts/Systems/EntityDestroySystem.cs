@@ -11,10 +11,11 @@ namespace Sandbox.Asteroids
 {
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
-    public partial class ProjectileDestroySystem : SystemBase
+    public partial class EntityDestroySystem : SystemBase
     {
 
         private EntityQuery projectileQuery;
+        private EntityQuery asteroidQuery;
         private EntityQuery cameraQuery;
         
         [BurstCompile]
@@ -23,7 +24,9 @@ namespace Sandbox.Asteroids
             base.OnCreate();
 
             cameraQuery = GetEntityQuery(ComponentType.ReadOnly<Camera>());
+
             projectileQuery = GetEntityQuery(ComponentType.ReadOnly<Projectile>(), ComponentType.ReadOnly<LocalTransform>());
+            asteroidQuery = GetEntityQuery(ComponentType.ReadOnly<Asteroid>(), ComponentType.ReadOnly<LocalTransform>());
 
         }
         [BurstCompile]
@@ -53,21 +56,30 @@ namespace Sandbox.Asteroids
             var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             var ecb = ecbSingleton.CreateCommandBuffer(World.Unmanaged);
 
-            //destroy all entities that we tagged with destroytag
-            Dependency = new ProjectileDestroySystemDestroyJob
+            Dependency = new DestroySystemDestroyJob
             {
-                // Note the function call required to get a parallel writer for an EntityCommandBuffer.
                 top = top,
                 left = left,
                 bottom = bottom,
                 right = right,
                 ECB = ecb.AsParallelWriter(),
             }.ScheduleParallel(projectileQuery, Dependency);
+
+            Dependency.Complete();
+            Dependency = new DestroySystemDestroyJob
+            {
+                top = top + 2,
+                left = left - 5,
+                bottom = bottom - 2,
+                right = right + 5,
+                ECB = ecb.AsParallelWriter(),
+            }.ScheduleParallel(asteroidQuery, Dependency);
+
             Dependency.Complete();
 
         }
         [BurstCompile]
-        partial struct ProjectileDestroySystemDestroyJob : IJobEntity
+        partial struct DestroySystemDestroyJob : IJobEntity
         {
             public float top;
             public float left;
@@ -82,11 +94,7 @@ namespace Sandbox.Asteroids
 
                 float3 pos = transform.Position;
 
-
-                bDestroy = pos.x < left;
-                bDestroy = pos.x > right;
-                bDestroy = pos.y < bottom;
-                bDestroy = pos.y > top;
+                bDestroy = (pos.x < left) || (pos.x > right) || (pos.y < bottom) || (pos.y > top);
 
                 if(bDestroy)
                 {
