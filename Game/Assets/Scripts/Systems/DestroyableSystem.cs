@@ -11,12 +11,14 @@ namespace Sandbox.Asteroids
 {
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
-    public partial class EntityDestroySystem : SystemBase
+
+    public partial class DestroyableSystem : SystemBase
     {
 
         private EntityQuery projectileQuery;
         private EntityQuery asteroidQuery;
         private EntityQuery cameraQuery;
+        private EntityQuery destroyableQuery;
         
         [BurstCompile]
         protected override void OnCreate()
@@ -27,6 +29,7 @@ namespace Sandbox.Asteroids
 
             projectileQuery = GetEntityQuery(ComponentType.ReadOnly<Projectile>(), ComponentType.ReadOnly<LocalTransform>());
             asteroidQuery = GetEntityQuery(ComponentType.ReadOnly<Asteroid>(), ComponentType.ReadOnly<LocalTransform>());
+            destroyableQuery = GetEntityQuery(ComponentType.ReadOnly<Destroyable>());
 
         }
         [BurstCompile]
@@ -53,56 +56,65 @@ namespace Sandbox.Asteroids
             float bottom = bottomLeft.y;
             float left = bottomLeft.x;
 
-            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            var ecb = ecbSingleton.CreateCommandBuffer(World.Unmanaged);
-
-            Dependency = new DestroySystemDestroyJob
+            var destroyProjectiles = new DestroyableSystemEntityVisibilityJob
             {
                 top = top,
                 left = left,
                 bottom = bottom,
                 right = right,
-                ECB = ecb.AsParallelWriter(),
-            }.ScheduleParallel(projectileQuery, Dependency);
+            }.ScheduleParallel(projectileQuery,Dependency);
 
-            Dependency.Complete();
 
-            Dependency = new DestroySystemDestroyJob
+            var destroyAsteroids = new DestroyableSystemEntityVisibilityJob
             {
                 top = top + 2,
                 left = left - 5,
                 bottom = bottom - 2,
                 right = right + 5,
-                ECB = ecb.AsParallelWriter(),
-            }.ScheduleParallel(asteroidQuery, Dependency);
+            }.ScheduleParallel(asteroidQuery, destroyProjectiles);
+            destroyAsteroids.Complete();
+
+
+            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(World.Unmanaged);
+
+            Dependency = new DestroyableSystemDestroyJob
+            {
+                ECB = ecb.AsParallelWriter()
+            }.ScheduleParallel(destroyableQuery, Dependency);
 
             Dependency.Complete();
 
         }
         [BurstCompile]
-        partial struct DestroySystemDestroyJob : IJobEntity
+        partial struct DestroyableSystemEntityVisibilityJob : IJobEntity
         {
             public float top;
             public float left;
             public float bottom;
             public float right;
+            void Execute([ChunkIndexInQuery] int chunkIndex, ref Destroyable destroyable,in LocalTransform transform, in Entity entity)
+            {
+                float3 pos = transform.Position;
+                destroyable.markForDestroy = (pos.x < left) || (pos.x > right) || (pos.y < bottom) || (pos.y > top);
 
+            }
+        }
+
+        [BurstCompile]
+        partial struct DestroyableSystemDestroyJob : IJobEntity
+        {
             public EntityCommandBuffer.ParallelWriter ECB;
-            void Execute([ChunkIndexInQuery] int chunkIndex,in LocalTransform transform, in Entity entity)
+            void Execute([ChunkIndexInQuery] int chunkIndex, in LocalTransform transform,in Destroyable destroyable, in Entity entity)
             {
 
-                bool bDestroy = false;
-
-                float3 pos = transform.Position;
-
-                bDestroy = (pos.x < left) || (pos.x > right) || (pos.y < bottom) || (pos.y > top);
-
-                if(bDestroy)
+                if (destroyable.markForDestroy)
                 {
                     ECB.DestroyEntity(chunkIndex, entity);
                 }
-                
+
             }
         }
+
     }
 }

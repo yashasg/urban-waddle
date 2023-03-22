@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 1863440772802008383}
   - component: {fileID: 8991476698858690175}
   - component: {fileID: 7429947868082165168}
+  - component: {fileID: -2405292040793063426}
   m_Layer: 0
   m_Name: AsteroidTiny
   m_TagString: Untagged
@@ -325,3 +326,16 @@ MonoBehaviour:
         Tag07: 0
     m_SerializedVersion: 1
   m_SerializedVersion: 1
+--- !u!114 &-2405292040793063426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7283207753800333751}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b110232917abd664f95cf109e2b5be4b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  toBeDestroyed: 0
