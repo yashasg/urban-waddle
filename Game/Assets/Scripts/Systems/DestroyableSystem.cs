@@ -17,6 +17,7 @@ namespace Sandbox.Asteroids
         private EntityQuery cameraQuery;
         private EntityQuery destroyableQuery;
         
+
         [BurstCompile]
         protected override void OnCreate()
         {
@@ -29,6 +30,7 @@ namespace Sandbox.Asteroids
             destroyableQuery = GetEntityQuery(ComponentType.ReadOnly<LocalTransform>(),ComponentType.ReadOnly<Destroyable>());
 
         }
+
         [BurstCompile]
         protected override void OnUpdate()
         {

@@ -6,13 +6,17 @@ using Unity.Transforms;
 using Unity.Burst;
 using UnityEngine;
 using Unity.Collections.LowLevel.Unsafe;
+using Unity.VisualScripting;
+using static UnityEngine.EventSystems.EventTrigger;
+using Unity.Physics.Systems;
 
 namespace Sandbox.Asteroids
 {
+    [UpdateBefore(typeof(DestroyableSystem))]
     public partial class AsteroidSpawnerSystem : SystemBase
     {
         [BurstCompile]
-        struct AsteroidSpawnerSystemPlacementJob : IJobParallelFor
+        struct AsteroidSpawnerSystemRandomPlacementJob : IJobParallelFor
         {
             [NativeDisableContainerSafetyRestriction]
             [NativeDisableParallelForRestriction]
@@ -56,6 +60,38 @@ namespace Sandbox.Asteroids
             }
         }
 
+
+
+        struct AsteroidSpawnerSystemOrphanPlacementJob : IJobParallelFor
+        {
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
+            public ComponentLookup<LocalTransform> localTransformLookup;
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
+            public ComponentLookup<Movement> movementLookup;
+
+            [ReadOnly]
+            public Entity parent;
+            [ReadOnly]
+            public NativeArray<Entity> children;
+            public void Execute(int index)
+            {
+
+                Entity child = children[index];
+
+                LocalTransform parentTransform = localTransformLookup[parent];
+                localTransformLookup[child] = parentTransform;
+
+                float2 parentDirection = movementLookup[parent].direction;
+                Movement childMovement = movementLookup[child];
+                float2 normal = (index == 0) ? math.float2(-parentDirection.y, parentDirection.x) : math.float2(parentDirection.y, -parentDirection.x);
+                childMovement.direction = normal;
+                movementLookup[child] = childMovement;
+
+            }
+        }
+
         private EntityQuery asteroidSpawnerQuery;
         private EntityQuery asteroidQuery;
         private EntityQuery cameraQuery;
@@ -85,13 +121,6 @@ namespace Sandbox.Asteroids
             Vector3 bottomLeft = mainCamera.ViewportToWorldPoint(new Vector3(0, 0, cameraDistZ));
             Vector3 topRight = mainCamera.ViewportToWorldPoint(new Vector3(1, 1, cameraDistZ));
 
-            float top = topRight.y;
-            float right = topRight.x;
-
-            float bottom = bottomLeft.y;
-            float left = bottomLeft.x;
-
-
             //spawn the large asteroids
             for (int i = 0; i < asteroidSpawners.Length; ++i)
             {
@@ -99,7 +128,7 @@ namespace Sandbox.Asteroids
                 //if current session is not complete
                 if (spawnedAsteroids > 0)
                 {
-                    return;
+                    break;
                 }
 
                 //spawn entities
@@ -107,16 +136,84 @@ namespace Sandbox.Asteroids
                 NativeArray<Entity> asteroidEntities = CollectionHelper.CreateNativeArray<Entity, RewindableAllocator>(entitiesToSpawn, ref World.Unmanaged.UpdateAllocator);
                 EntityManager.Instantiate(spawner.asteroidBig, asteroidEntities);
 
+
+                float top = topRight.y;
+                float right = topRight.x;
+
+                float bottom = bottomLeft.y;
+                float left = bottomLeft.x;
+
                 //update the position of the spawned entities
-                Dependency = new AsteroidSpawnerSystemPlacementJob
+                Dependency = new AsteroidSpawnerSystemRandomPlacementJob
                 {
                     localTransformLookup = GetComponentLookup<LocalTransform>(),
                     movementLookup = GetComponentLookup<Movement>(),
                     asteroids = asteroidEntities,
                     spawnerRect = spawner.spawnRect + math.float2x2(left, bottom, right, top)
 
-                }.Schedule(entitiesToSpawn,50, Dependency);
+                }.Schedule(entitiesToSpawn, entitiesToSpawn, Dependency);
             }
+
+            //spawn orphan asteroids
+            var asteroids = asteroidQuery.ToEntityArray(Allocator.Temp);
+            var destroyableLookup = GetComponentLookup<Destroyable>(true /*isreadonly*/);
+            var asteroidLookup = GetComponentLookup<Asteroid>(true /*isreadonly*/);
+
+            foreach (var asteroid in asteroids)
+            {
+                var destroyableAsteroid = destroyableLookup[asteroid];
+
+                if(!destroyableAsteroid.markForDestroy)
+                {
+                    continue;
+                }
+
+                //we were marked for destroy spawn childrent
+                int asteroidsToSpawn = 2;
+                NativeArray<Entity> asteroidEntities = CollectionHelper.CreateNativeArray<Entity, RewindableAllocator>(asteroidsToSpawn, ref World.Unmanaged.UpdateAllocator);
+                Entity prefab = GetEntityToSpawn(asteroidSpawners[0], asteroidLookup[asteroid].asteroidSize);
+
+                if(prefab == Entity.Null)
+                {
+                    continue;
+                }
+
+                EntityManager.Instantiate(prefab, asteroidEntities);
+                Dependency = new AsteroidSpawnerSystemOrphanPlacementJob
+                {
+                    localTransformLookup = GetComponentLookup<LocalTransform>(),
+                    movementLookup = GetComponentLookup<Movement>(),
+                    parent = asteroid,
+                    children = asteroidEntities,
+
+                }.Schedule(asteroidsToSpawn, asteroidsToSpawn, Dependency);
+
+
+            }
+            
+            
+        }
+
+
+        private Entity GetEntityToSpawn(AsteroidSpawner spawner,AsteroidSize size)
+        {
+            //spawn 1 size smaller
+            if (size == AsteroidSize.Big)
+            {
+                return spawner.asteroidMed;
+            }
+
+            if (size == AsteroidSize.Med)
+            {
+                return spawner.asteroidSmall;
+            }
+
+            if (size == AsteroidSize.Small)
+            {
+                return spawner.asteroidTiny;
+            }
+
+            return Entity.Null;
 
         }
     }

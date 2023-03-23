@@ -49,11 +49,28 @@ namespace Sandbox.Asteroids
                 {
                     return false;
                 }
+
+                Destroyable destroyableA = allDestroyables[entityA];
+                Destroyable destroyableB = allDestroyables[entityB];
+
+                bool isEntityAMarked = destroyableA.markForDestroy;
+                bool isEntityBMarked = destroyableB.markForDestroy;
+
+                if(isEntityAMarked || isEntityBMarked)
+                {
+                    return false;
+                }
+
                 Entity projectileEntity = isEntityAProjectile ? entityA : entityB;
                 Entity asteroidEntity = isEntityAAsteroid ? entityA : entityB;
 
-                //commandBuffer.DestroyEntity(projectileEntity);
-                //commandBuffer.DestroyEntity(asteroidEntity);
+
+                destroyableA.markForDestroy = true;
+                destroyableB.markForDestroy = true;
+
+
+                allDestroyables[entityA] = destroyableA;
+                allDestroyables[entityB] = destroyableB;
 
                 //UnityEngine.Debug.LogWarning(string.Format("ProjectileEntity {0} collided with AsteroidEntity {1}", projectileEntity.Index, asteroidEntity.Index));
 
@@ -69,16 +86,6 @@ namespace Sandbox.Asteroids
                 {
                     return;
                 }
-
-                Destroyable destroyableA = allDestroyables[entityA];
-                Destroyable destroyableB = allDestroyables[entityB];
-
-                destroyableA.markForDestroy = true;
-                destroyableB.markForDestroy = true;
-
-
-                allDestroyables[entityA] = destroyableA;
-                allDestroyables[entityB] = destroyableB;
             }
         }
 
@@ -98,6 +105,7 @@ namespace Sandbox.Asteroids
                 allDestroyables = GetComponentLookup<Destroyable>(),
 
             }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), Dependency);
+            Dependency.Complete();
         }
     }
 }
