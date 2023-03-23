@@ -11,8 +11,6 @@ namespace Sandbox.Asteroids
 {
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
-
-    [UpdateBefore(typeof(DestroyableSystem))]
     public partial class ProjectileTriggerSystem : SystemBase
     {
         [BurstCompile]
@@ -57,7 +55,7 @@ namespace Sandbox.Asteroids
                 //commandBuffer.DestroyEntity(projectileEntity);
                 //commandBuffer.DestroyEntity(asteroidEntity);
 
-                UnityEngine.Debug.LogWarning(string.Format("ProjectileEntity {0} collided with AsteroidEntity {1}", projectileEntity.Index, asteroidEntity.Index));
+                //UnityEngine.Debug.LogWarning(string.Format("ProjectileEntity {0} collided with AsteroidEntity {1}", projectileEntity.Index, asteroidEntity.Index));
 
                 return true;
             }

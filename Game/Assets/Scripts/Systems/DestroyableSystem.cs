@@ -9,9 +9,6 @@ using Unity.Burst;
 
 namespace Sandbox.Asteroids
 {
-    [UpdateInGroup(typeof(PhysicsSystemGroup))]
-    [UpdateAfter(typeof(PhysicsSimulationGroup))]
-
     public partial class DestroyableSystem : SystemBase
     {
 
@@ -29,7 +26,7 @@ namespace Sandbox.Asteroids
 
             projectileQuery = GetEntityQuery(ComponentType.ReadOnly<Projectile>(), ComponentType.ReadOnly<LocalTransform>());
             asteroidQuery = GetEntityQuery(ComponentType.ReadOnly<Asteroid>(), ComponentType.ReadOnly<LocalTransform>());
-            destroyableQuery = GetEntityQuery(ComponentType.ReadOnly<Destroyable>());
+            destroyableQuery = GetEntityQuery(ComponentType.ReadOnly<LocalTransform>(),ComponentType.ReadOnly<Destroyable>());
 
         }
         [BurstCompile]
@@ -96,7 +93,11 @@ namespace Sandbox.Asteroids
             void Execute([ChunkIndexInQuery] int chunkIndex, ref Destroyable destroyable,in LocalTransform transform, in Entity entity)
             {
                 float3 pos = transform.Position;
-                destroyable.markForDestroy = (pos.x < left) || (pos.x > right) || (pos.y < bottom) || (pos.y > top);
+                if(!destroyable.markForDestroy)
+                {
+                    destroyable.markForDestroy = (pos.x < left) || (pos.x > right) || (pos.y < bottom) || (pos.y > top);
+                }
+               
 
             }
         }
@@ -105,7 +106,7 @@ namespace Sandbox.Asteroids
         partial struct DestroyableSystemDestroyJob : IJobEntity
         {
             public EntityCommandBuffer.ParallelWriter ECB;
-            void Execute([ChunkIndexInQuery] int chunkIndex, in LocalTransform transform,in Destroyable destroyable, in Entity entity)
+            void Execute([ChunkIndexInQuery] int chunkIndex,in Destroyable destroyable, in Entity entity)
             {
 
                 if (destroyable.markForDestroy)

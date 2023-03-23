@@ -28,7 +28,6 @@ namespace Sandbox.Asteroids
         public bool markForDestroy;
     }
 
-
 }
 
 
