@@ -6,12 +6,11 @@ using Unity.Transforms;
 
 namespace Sandbox.Asteroids
 {
-    [RequireComponent(typeof(SpriteRenderer))]
     public class PlayerShipAuthoring : MonoBehaviour
     {
         public int health;
         public float shieldDuration;
-        public SpriteRenderer spriteRenderer;
+        public MeshRenderer meshRenderer;
 
         public class PlayerShipAuthoringBaker : Baker<PlayerShipAuthoring>
         {
@@ -21,7 +20,7 @@ namespace Sandbox.Asteroids
                 {
                     health = authoring.health,
                     shieldDuration = authoring.shieldDuration,
-                    turretOffset = math.float3(0, authoring.spriteRenderer.localBounds.extents.y,0)
+                    turretOffset = math.float3(0, authoring.meshRenderer.localBounds.extents.y,0)
                 });
             }
         }

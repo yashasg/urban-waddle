@@ -65,7 +65,7 @@ namespace Sandbox.Asteroids
                 localTransform.Position = newPos;
 
 
-            }).Run();
+            }).Schedule();
 
             float deltaTime = SystemAPI.Time.DeltaTime;
             Entities.ForEach((ref LocalTransform transform, in Movement movement, in PlayerTag playerTag) =>
@@ -84,7 +84,7 @@ namespace Sandbox.Asteroids
                 transform = LocalTransform.FromMatrix(TRS);
 
 
-            }).Run();
+            }).Schedule();
 
         }
     }
