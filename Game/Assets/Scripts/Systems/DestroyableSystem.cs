@@ -92,7 +92,7 @@ namespace Sandbox.Asteroids
             public float left;
             public float bottom;
             public float right;
-            void Execute([ChunkIndexInQuery] int chunkIndex, ref Destroyable destroyable,in LocalTransform transform, in Entity entity)
+            void Execute([ChunkIndexInQuery] int chunkIndex, ref Destroyable destroyable,in LocalTransform transform)
             {
                 float3 pos = transform.Position;
                 if(!destroyable.markForDestroy)

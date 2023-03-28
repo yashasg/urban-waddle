@@ -19,7 +19,6 @@ namespace Sandbox.Asteroids
                 AddComponent(new PlayerShip
                 {
                     health = authoring.health,
-                    shieldDuration = authoring.shieldDuration,
                     turretOffset = math.float3(0, authoring.meshRenderer.localBounds.extents.y,0)
                 });
             }
@@ -31,7 +30,6 @@ namespace Sandbox.Asteroids
     {
 
         public int health;
-        public float shieldDuration;
         public float3 turretOffset;
     }
 
