@@ -6,7 +6,6 @@ using Unity.Transforms;
 
 namespace Sandbox.Asteroids
 {
-    [RequireComponent(typeof(SpriteRenderer))]
     public class MovementAuthoring : MonoBehaviour
     {
         public float2 direction;

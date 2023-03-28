@@ -5,6 +5,7 @@ using Unity.Collections;
 using UnityEngine.Rendering;
 using Unity.Physics.Systems;
 using Unity.Burst;
+using Unity.Collections.LowLevel.Unsafe;
 
 namespace Sandbox.Asteroids
 {
@@ -19,8 +20,9 @@ namespace Sandbox.Asteroids
             public ComponentLookup<Pickup> allPickups;
             [ReadOnly]
             public ComponentLookup<PlayerTag> allPlayers;
-
-            public EntityCommandBuffer commandBuffer;
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
+            public ComponentLookup<Destroyable> allDestroyables;
             public void Execute(TriggerEvent triggerEvent)
             {
                 Entity entityA = triggerEvent.EntityA;
@@ -52,8 +54,9 @@ namespace Sandbox.Asteroids
 
                 //UnityEngine.Debug.Log((isEntityAPickup ? "PickupEntityA " : "PickupEntityB ") + "collided with " + (isEntityAPlayer ? "PlayerA" : "PlayerB"));
 
-                commandBuffer.DestroyEntity(pickupEntity);
-
+                Destroyable destroyable = allDestroyables[pickupEntity];
+                destroyable.markForDestroy = true;
+                allDestroyables[pickupEntity] = destroyable;
 
             }
         }
@@ -65,13 +68,12 @@ namespace Sandbox.Asteroids
         [BurstCompile]
         protected override void OnUpdate()
         {
-            var endSimulationEntityCommandBufferSystem = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            EntityCommandBuffer commandBuffer = endSimulationEntityCommandBufferSystem.CreateCommandBuffer(World.Unmanaged);
+
             Dependency = new PickupOnTriggerSystemJob
             {
                 allPickups = GetComponentLookup<Pickup>(true /*isreadonly*/),
                 allPlayers = GetComponentLookup<PlayerTag>(true /*isreadonly*/),
-                commandBuffer = commandBuffer
+                allDestroyables = GetComponentLookup<Destroyable>(),
 
             }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), Dependency);
 

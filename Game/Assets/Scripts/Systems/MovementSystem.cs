@@ -26,7 +26,6 @@ namespace Sandbox.Asteroids
         {
             float deltaTime = SystemAPI.Time.DeltaTime;
 
-
             var movementEntities = movementEntityQuery.ToEntityArray(WorldUpdateAllocator);
 
             //update entity movement and rotation for non players

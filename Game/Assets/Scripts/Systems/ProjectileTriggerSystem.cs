@@ -9,6 +9,7 @@ using Unity.Collections.LowLevel.Unsafe;
 
 namespace Sandbox.Asteroids
 {
+    [RequireMatchingQueriesForUpdate]
     [UpdateInGroup(typeof(PhysicsSystemGroup))]
     [UpdateAfter(typeof(PhysicsSimulationGroup))]
     public partial class ProjectileTriggerSystem : SystemBase
@@ -21,7 +22,8 @@ namespace Sandbox.Asteroids
             public ComponentLookup<Projectile> allProjectiles;
             [ReadOnly]
             public ComponentLookup<Asteroid> allAsteroids;
-
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
             public ComponentLookup<Destroyable> allDestroyables;
 
             bool HandleProjectileTrigger(Entity entityA, Entity entityB)
@@ -105,7 +107,6 @@ namespace Sandbox.Asteroids
                 allDestroyables = GetComponentLookup<Destroyable>(),
 
             }.Schedule(SystemAPI.GetSingleton<SimulationSingleton>(), Dependency);
-            Dependency.Complete();
         }
     }
 }

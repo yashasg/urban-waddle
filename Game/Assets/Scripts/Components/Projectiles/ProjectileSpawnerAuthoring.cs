@@ -30,7 +30,7 @@ namespace Sandbox.Asteroids
     public struct ProjectileSpawner : IComponentData
     {
         public Entity bullet;
-        public Entity missle; 
+        public Entity missle;
         public int timeBetweenProjectilesMS;
 
     }

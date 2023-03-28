@@ -6,6 +6,7 @@ using Unity.Transforms;
 using UnityEngine;
 using Unity.Physics.Systems;
 using Unity.Collections.LowLevel.Unsafe;
+using System;
 
 namespace Sandbox.Asteroids
 {
@@ -18,7 +19,7 @@ namespace Sandbox.Asteroids
         {
             base.OnCreate();
             cameraQuery = GetEntityQuery(ComponentType.ReadOnly<Camera>());
-            playerQuery = GetEntityQuery(ComponentType.ReadOnly<PlayerTag>());
+            playerQuery = GetEntityQuery(ComponentType.ReadOnly<PlayerTag>(), ComponentType.ReadOnly<Movement>(), ComponentType.ReadOnly<LocalTransform>());
         }
         protected override void OnUpdate()
         {
@@ -83,6 +84,20 @@ namespace Sandbox.Asteroids
                 var TRS = float4x4.TRS(newPosition, rotation, math.float3(1.0f));
                 transform = LocalTransform.FromMatrix(TRS);
 
+            }).Run();
+
+            var player = playerQuery.ToComponentDataArray<LocalTransform>(Allocator.Temp)[0];
+
+            Entities.ForEach((ref LocalTransform transform, ref Shield shield, ref Destroyable destroyable,in PlayerTag playerTag) =>
+            {
+                transform = LocalTransform.FromPositionRotationScale(player.Position,player.Rotation,player.Scale);
+                float DeltaTimeMS = deltaTime * 1000.0f;
+                shield.durationMS = math.max(shield.durationMS - DeltaTimeMS, 0);
+
+                if(shield.durationMS <= 0) 
+                {
+                    destroyable.markForDestroy = true;
+                }
 
             }).Run();
 

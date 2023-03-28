@@ -36,12 +36,6 @@ namespace Sandbox.Asteroids
                 float3 projectilePos = playerPos + (projectileDir * turretOffset.y);
                 var TRS = float4x4.TRS(projectilePos, playerRot, math.float3(1.0f));
 
-                //var localToWorld = new LocalToWorld
-                //{
-                //    Value = TRS
-                //};
-
-                //localTransformLookup[spawnedProjectile] = localToWorld;
                 localTransformLookup[spawnedProjectile] = LocalTransform.FromMatrix(TRS);
 
                 //update direction
