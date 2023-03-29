@@ -198,14 +198,15 @@ namespace Sandbox.Asteroids
                     continue;
                 }
                 //spawn UFO
-                Dependency = new AsteroidSpawnerSystemRandomPlacementJob
+                Entity ufo = EntityManager.Instantiate(spawner.ufo);
+                Dependency = new AsteroidSpawnerSystemUFOPlacementJob
                 {
                     localTransformLookup = GetComponentLookup<LocalTransform>(),
                     movementLookup = GetComponentLookup<Movement>(),
-                    asteroids = asteroidEntities,
+                    ufo = ufo,
                     spawnerRect = spawner.spawnRect + math.float2x2(left, bottom, right, top)
 
-                }.Schedule(entitiesToSpawn, entitiesToSpawn, Dependency);
+                }.Schedule(Dependency);
 
             }
 
