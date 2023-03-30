@@ -17,7 +17,7 @@ namespace Sandbox.Asteroids
 
 
             [ReadOnly]
-            public PlayerShip playerShip;
+            public float3 turretOffset;
             [ReadOnly]
             public Entity shipEntity;
             [ReadOnly]
@@ -30,7 +30,6 @@ namespace Sandbox.Asteroids
                 quaternion playerRot = shipLocalTransform.Rotation;
 
                 float3 projectileDir = math.mul(playerRot,math.up()); //get the direction based on the player rotation
-                float3 turretOffset = playerShip.turretOffset;
 
               
                 float3 projectilePos = playerPos + (projectileDir * turretOffset.y);
@@ -48,20 +47,35 @@ namespace Sandbox.Asteroids
 
         private EntityQuery projectileSpawnerQuery;
         private EntityQuery playerQuery;
-        private int remainingTimeSinceProjectileMS;
+        private EntityQuery ufoQuery;
+        private int remainingTimeSincePlayerProjectileMS;
+        private int remainingTimeSinceUfoProjectileMS;
         protected override void OnCreate()
         {
             base.OnCreate();
 
             projectileSpawnerQuery = GetEntityQuery(ComponentType.ReadOnly<ProjectileSpawner>());
             playerQuery = GetEntityQuery(ComponentType.ReadOnly<PlayerInput>(), ComponentType.ReadOnly<Movement>(), ComponentType.ReadOnly<PlayerShip>());
+            ufoQuery = GetEntityQuery(ComponentType.ReadOnly<Ufo>(), ComponentType.ReadOnly<Movement>());
 
 
         }
+
         protected override void OnUpdate()
         {
 
             var projectileSpawners = projectileSpawnerQuery.ToComponentDataArray<ProjectileSpawner>(Allocator.Temp);
+
+
+            SpawnPlayerProjectile(projectileSpawners);
+
+            SpawnUfoProjectile(projectileSpawners);
+
+        }
+
+        private void SpawnPlayerProjectile(in NativeArray<ProjectileSpawner> projectileSpawners)
+        {
+
             var players = playerQuery.ToEntityArray(Allocator.Temp);
 
             if (players.Length < 1)
@@ -80,10 +94,10 @@ namespace Sandbox.Asteroids
             }
 
             int DeltaTimeMS = Convert.ToInt32(SystemAPI.Time.DeltaTime * 1000);
-            remainingTimeSinceProjectileMS = math.max(remainingTimeSinceProjectileMS - DeltaTimeMS,0);
+            remainingTimeSincePlayerProjectileMS = math.max(remainingTimeSincePlayerProjectileMS - DeltaTimeMS, 0);
 
 
-            if (remainingTimeSinceProjectileMS > 0)
+            if (remainingTimeSincePlayerProjectileMS > 0)
             {
                 //we are not ready to shoot yet
                 return;
@@ -96,7 +110,7 @@ namespace Sandbox.Asteroids
                 ProjectileSpawner spawner = projectileSpawners[i];
 
                 //reset the remaining time
-                remainingTimeSinceProjectileMS = spawner.timeBetweenProjectilesMS;
+                remainingTimeSincePlayerProjectileMS = spawner.timeBetweenPlayerProjectilesMS;
 
                 //spawn entities
                 Entity spawnedProjectile = EntityManager.Instantiate(spawner.bullet);
@@ -106,13 +120,66 @@ namespace Sandbox.Asteroids
                 {
                     localTransformLookup = GetComponentLookup<LocalTransform>(),
                     movementLookup = GetComponentLookup<Movement>(),
-                    playerShip = GetComponentLookup<PlayerShip>()[localPlayer],
+                    turretOffset = GetComponentLookup<PlayerShip>()[localPlayer].turretOffset,
                     shipEntity = localPlayer,
                     spawnedProjectile = spawnedProjectile
 
                 }.Schedule(Dependency);
             }
 
+
+        }
+
+        private void SpawnUfoProjectile(in NativeArray<ProjectileSpawner> projectileSpawners)
+        {
+
+            var ufos = ufoQuery.ToEntityArray(Allocator.Temp);
+
+            if (ufos.Length < 1)
+            {
+                //need atleast 1
+                return;
+            }
+
+            int DeltaTimeMS = Convert.ToInt32(SystemAPI.Time.DeltaTime * 1000);
+            remainingTimeSinceUfoProjectileMS = math.max(remainingTimeSinceUfoProjectileMS - DeltaTimeMS, 0);
+
+            if (remainingTimeSinceUfoProjectileMS > 0)
+            {
+                //we are not ready to shoot yet
+                return;
+            }
+
+
+            var transformLookup = GetComponentLookup<LocalTransform>();
+            for (int i = 0; i < ufos.Length; ++i)
+            {
+                var ufo = ufos[i];
+                
+                for (int j = 0; j < projectileSpawners.Length; ++j)
+                {
+
+                    ProjectileSpawner spawner = projectileSpawners[j];
+
+                    //reset the remaining time
+                    remainingTimeSinceUfoProjectileMS = spawner.timeBetweenUfoProjectilesMS;
+
+                    //spawn entities
+                    Entity spawnedProjectile = EntityManager.Instantiate(spawner.ufoBullet);
+
+                    //update the position of the spawned entities
+                    Dependency = new ProjectileSpawnerSystemPlacementJob
+                    {
+                        localTransformLookup = GetComponentLookup<LocalTransform>(),
+                        movementLookup = GetComponentLookup<Movement>(),
+                        turretOffset = math.up(),
+                        shipEntity = ufo,
+                        spawnedProjectile = spawnedProjectile
+
+                    }.Schedule(Dependency);
+                }
+
+            }
 
         }
     }

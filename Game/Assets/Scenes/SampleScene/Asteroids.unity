@@ -156,6 +156,7 @@ MonoBehaviour:
   asteroidMed: {fileID: 1803499824303215459, guid: 51a19a739fed27d4aa8e10d14971f7bf, type: 3}
   asteroidSmall: {fileID: 9140995668080735455, guid: 6a7e543ef24452f4da28915854639c3e, type: 3}
   asteroidTiny: {fileID: 7283207753800333751, guid: 6770d5287345e404a808e3dc09626a13, type: 3}
+  ufo: {fileID: 2204473776803347226, guid: d74e0c6efd167fa429c288f668e3e756, type: 3}
   spawnRectDelta:
     serializedVersion: 2
     x: -2
@@ -163,6 +164,7 @@ MonoBehaviour:
     width: 2
     height: 2
   asteroidCountPerSession: 4
+  ufoSpawnSessionCount: 3
 --- !u!4 &2010021185
 Transform:
   m_ObjectHideFlags: 0

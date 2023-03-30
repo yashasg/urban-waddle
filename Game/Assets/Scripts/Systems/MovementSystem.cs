@@ -60,8 +60,15 @@ namespace Sandbox.Asteroids
                 float3 newPosition = transform.Position + (normalizedDirection * movement.speed * deltaTime);
 
                 //update rotation
-                quaternion rotation = transform.Rotation;
-                var TRS = float4x4.TRS(newPosition, rotation, math.float3(1.0f));
+                float3 targetDir = math.up();
+                if(math.dot(transform.Forward(), targetDir) >= 0.8)
+                {
+                    targetDir = math.left();
+                }
+                quaternion targetRot =  quaternion.LookRotationSafe(transform.Forward(), targetDir);
+                quaternion rotation = math.slerp(transform.Rotation, targetRot, movement.turnSpeed * deltaTime);
+
+                var TRS = float4x4.TRS(newPosition, rotation, transform.Scale);
 
                 localTransformLookup[movementEntity] = LocalTransform.FromMatrix(TRS);
             }

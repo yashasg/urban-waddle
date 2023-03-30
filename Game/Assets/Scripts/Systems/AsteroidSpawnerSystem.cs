@@ -197,6 +197,7 @@ namespace Sandbox.Asteroids
                 {
                     continue;
                 }
+                currentAsteroidSession = 0;
                 //spawn UFO
                 Entity ufo = EntityManager.Instantiate(spawner.ufo);
                 Dependency = new AsteroidSpawnerSystemUFOPlacementJob
