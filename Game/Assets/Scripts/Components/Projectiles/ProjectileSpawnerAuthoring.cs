@@ -8,7 +8,9 @@ namespace Sandbox.Asteroids
     {
         public GameObject bullet;
         public GameObject missle;
-        public int timeBetweenProjectilesMS = 0;
+        public GameObject ufoBullet;
+        public int timeBetweenPlayerProjectilesMS = 0;
+        public int timeBetweenUfoProjectilesMS = 0;
 
         public class ProjectileSpawnerAuthoringBaker : Baker<ProjectileSpawnerAuthoring>
         {
@@ -18,7 +20,9 @@ namespace Sandbox.Asteroids
                 {
                     bullet = GetEntity(authoring.bullet),
                     missle = GetEntity(authoring.missle),
-                    timeBetweenProjectilesMS = authoring.timeBetweenProjectilesMS
+                    ufoBullet= GetEntity(authoring.ufoBullet),
+                    timeBetweenPlayerProjectilesMS = authoring.timeBetweenPlayerProjectilesMS,
+                    timeBetweenUfoProjectilesMS = authoring.timeBetweenUfoProjectilesMS
                 });
 
 
@@ -31,7 +35,9 @@ namespace Sandbox.Asteroids
     {
         public Entity bullet;
         public Entity missle;
-        public int timeBetweenProjectilesMS;
+        public Entity ufoBullet;
+        public int timeBetweenPlayerProjectilesMS;
+        public int timeBetweenUfoProjectilesMS;
 
     }
 }

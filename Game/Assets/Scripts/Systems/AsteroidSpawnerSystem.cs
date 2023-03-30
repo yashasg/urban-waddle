@@ -59,9 +59,6 @@ namespace Sandbox.Asteroids
 
             }
         }
-
-
-
         struct AsteroidSpawnerSystemOrphanPlacementJob : IJobParallelFor
         {
             [NativeDisableContainerSafetyRestriction]
@@ -92,9 +89,51 @@ namespace Sandbox.Asteroids
             }
         }
 
+        struct AsteroidSpawnerSystemUFOPlacementJob : IJob
+        {
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
+            public ComponentLookup<LocalTransform> localTransformLookup;
+            [NativeDisableContainerSafetyRestriction]
+            [NativeDisableParallelForRestriction]
+            public ComponentLookup<Movement> movementLookup;
+
+            [ReadOnly]
+            public Entity ufo;
+            [ReadOnly]
+            public float2x2 spawnerRect;
+            public void Execute()
+            {
+                uint seed = (uint) 0x9F6ABC1;
+                var random = new Unity.Mathematics.Random(seed);
+
+                bool2 topLeft = random.NextBool2();
+                float posX = topLeft.x ? spawnerRect.c0.x : spawnerRect.c0.y;
+                float posY = topLeft.y ? spawnerRect.c1.y : spawnerRect.c1.x;
+                var pos = math.float3(posX, posY, 0);
+                var dest = math.float3(random.NextFloat(spawnerRect.c0.x, spawnerRect.c0.y), random.NextFloat(spawnerRect.c1.x, spawnerRect.c1.y), 0);
+                var dir = math.normalizesafe(dest - pos);
+
+                var TRS = float4x4.TRS(pos, quaternion.identity, math.float3(1.0f));
+
+
+                //update transform
+                localTransformLookup[ufo] = LocalTransform.FromMatrix(TRS);
+
+
+                //update direction
+                Movement movement = movementLookup[ufo];
+                movement.direction = math.float2(dir.x, dir.y);
+                movementLookup[ufo] = movement;
+
+            }
+        }
+
+
         private EntityQuery asteroidSpawnerQuery;
         private EntityQuery asteroidQuery;
         private EntityQuery cameraQuery;
+        private int currentAsteroidSession = 0;
         [BurstCompile]
         protected override void OnCreate()
         {
@@ -130,7 +169,7 @@ namespace Sandbox.Asteroids
                 {
                     break;
                 }
-
+                bool spawnUFO = ++currentAsteroidSession >= spawner.ufoSpawnSessionCount;
                 //spawn entities
                 int entitiesToSpawn = spawner.asteroidCountPerSession;
                 NativeArray<Entity> asteroidEntities = CollectionHelper.CreateNativeArray<Entity, RewindableAllocator>(entitiesToSpawn, ref World.Unmanaged.UpdateAllocator);
@@ -152,6 +191,24 @@ namespace Sandbox.Asteroids
                     spawnerRect = spawner.spawnRect + math.float2x2(left, bottom, right, top)
 
                 }.Schedule(entitiesToSpawn, entitiesToSpawn, Dependency);
+
+
+                if(!spawnUFO)
+                {
+                    continue;
+                }
+                currentAsteroidSession = 0;
+                //spawn UFO
+                Entity ufo = EntityManager.Instantiate(spawner.ufo);
+                Dependency = new AsteroidSpawnerSystemUFOPlacementJob
+                {
+                    localTransformLookup = GetComponentLookup<LocalTransform>(),
+                    movementLookup = GetComponentLookup<Movement>(),
+                    ufo = ufo,
+                    spawnerRect = spawner.spawnRect + math.float2x2(left, bottom, right, top)
+
+                }.Schedule(Dependency);
+
             }
 
             //spawn orphan asteroids
@@ -190,8 +247,8 @@ namespace Sandbox.Asteroids
 
 
             }
-            
-            
+
+
         }
 
 
