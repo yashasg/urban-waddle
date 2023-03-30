@@ -41,9 +41,55 @@ namespace Sandbox.Asteroids
             }
         }
 
+
+        struct ProjectileSpawnerSystemPursueJob : IJob
+        {
+            public ComponentLookup<LocalTransform> localTransformLookup;
+            public ComponentLookup<Movement> movementLookup;
+
+
+            [ReadOnly]
+            public Entity asteroid;
+            [ReadOnly]
+            public float3 shipPosition;
+            [ReadOnly]
+            public Entity spawnedProjectile;
+
+            public void Execute()
+            {
+                float3 asteroidPos = localTransformLookup[asteroid].Position;
+                var asteroidMovement = movementLookup[asteroid];
+                float3 asteroidDir = math.float3(asteroidMovement.direction,0);
+                float asteroidSpeed = asteroidMovement.speed;
+
+
+                Movement projectileMovement = movementLookup[spawnedProjectile];
+
+
+                float3 projectilePos = shipPosition ;
+                float3 direction = asteroidPos - shipPosition;
+                float T = math.length(direction) / projectileMovement.speed;
+                float3 futurePos = asteroidPos + (asteroidDir * asteroidSpeed * T);
+
+
+                var localTransform = localTransformLookup[spawnedProjectile];
+                var TRS = float4x4.TRS(projectilePos, quaternion.LookRotationSafe(math.forward(),direction), localTransform.Scale);
+
+                localTransformLookup[spawnedProjectile] = LocalTransform.FromMatrix(TRS);
+
+                //update direction
+                float3 projectileDir = futurePos - shipPosition;
+                projectileMovement.direction = math.float2(projectileDir.x, projectileDir.y);
+                movementLookup[spawnedProjectile] = projectileMovement;
+
+            }
+        }
+
         private EntityQuery projectileSpawnerQuery;
         private EntityQuery playerQuery;
         private EntityQuery ufoQuery;
+        private EntityQuery pickupQuery;
+        private EntityQuery asteroidQuery;
         private int remainingTimeSincePlayerProjectileMS;
         private int remainingTimeSinceUfoProjectileMS;
         private int ufoProjectileSpawnCount = 0;
@@ -54,7 +100,8 @@ namespace Sandbox.Asteroids
             projectileSpawnerQuery = GetEntityQuery(ComponentType.ReadOnly<ProjectileSpawner>());
             playerQuery = GetEntityQuery(ComponentType.ReadOnly<PlayerInput>(), ComponentType.ReadOnly<Movement>(), ComponentType.ReadOnly<PlayerShip>());
             ufoQuery = GetEntityQuery(ComponentType.ReadOnly<Ufo>(), ComponentType.ReadOnly<Movement>());
-
+            pickupQuery = GetEntityQuery(ComponentType.ReadOnly<Pickup>());
+            asteroidQuery = GetEntityQuery(ComponentType.ReadOnly<Asteroid>());
 
         }
 
@@ -62,11 +109,82 @@ namespace Sandbox.Asteroids
         {
 
             var projectileSpawners = projectileSpawnerQuery.ToComponentDataArray<ProjectileSpawner>(Allocator.Temp);
-
+            if(projectileSpawners.Length <= 0)
+            {
+                return;
+            }
 
             SpawnPlayerProjectile(projectileSpawners);
 
             SpawnUfoProjectile(projectileSpawners);
+
+            SpawnMissleProjectile(projectileSpawners);
+
+        }
+
+        private void SpawnMissleProjectile( in NativeArray<ProjectileSpawner> projectileSpawners)
+        {
+            var pickups = pickupQuery.ToEntityArray(Allocator.Temp);
+            var players = playerQuery.ToEntityArray(Allocator.Temp);
+            if(pickups.Length <= 0)
+            {
+                return;
+            }
+            if(players.Length <= 0)
+            {
+                return;
+            }
+            var asteroids = asteroidQuery.ToEntityArray(Allocator.Temp);
+            var transformLookup = GetComponentLookup<LocalTransform>();
+            var pickupLookup = GetComponentLookup<Pickup>(true);
+            var destroyableLookup= GetComponentLookup<Destroyable>(true);
+            for(int i = 0; i < pickups.Length; ++i) 
+            {
+                var pickup = pickups[i];
+
+                if (pickupLookup[pickup].pickupType != PickupType.Rocket)
+                {
+                    continue;
+                }
+                if (!destroyableLookup[pickup].markForDestroy)
+                {
+                    continue;
+                }
+
+                for(int j = 0; j < asteroids.Length; ++j)
+                {
+                    var asteroid = asteroids[j];
+
+                    if (destroyableLookup[asteroid].markForDestroy)
+                    {
+                        continue;
+                    }
+
+                    for(int k = 0; k < projectileSpawners.Length; ++k)
+                    {
+                        var spawner = projectileSpawners[k];
+
+                        Entity spawnedProjectile = EntityManager.Instantiate(spawner.missle);
+
+                        Dependency = new ProjectileSpawnerSystemPursueJob
+                        {
+                            localTransformLookup = transformLookup,
+                            movementLookup = GetComponentLookup<Movement>(),
+                            spawnedProjectile = spawnedProjectile,
+                            asteroid = asteroid,
+                            shipPosition = transformLookup[players[0]].Position
+
+                        }.Schedule(Dependency);
+
+
+                    }
+                    
+                }
+
+
+
+
+            }
 
         }
 
