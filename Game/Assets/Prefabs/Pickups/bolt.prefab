@@ -261,7 +261,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d53fbba28ac0ba4a8e95b97e6d77cbc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pickupType: 0
+  pickupType: 1
 --- !u!33 &2263661795879049151
 MeshFilter:
   m_ObjectHideFlags: 0
