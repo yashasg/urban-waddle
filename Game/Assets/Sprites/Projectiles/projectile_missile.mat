@@ -20,9 +20,9 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: projectile_bullet_material
+  m_Name: projectile_missile
   m_Shader: {fileID: 4800000, guid: 650dd9526735d5b46b79224bc6e94025, type: 3}
-  m_Parent: {fileID: 2100000, guid: 79d518fce13bac944bcfd0a5e88a73f8, type: 2}
+  m_Parent: {fileID: 2100000, guid: 894096c8b2c8a1c48b8a1f8b45cdf337, type: 2}
   m_ModifiedSerializedProperties: 20
   m_ValidKeywords:
   - _SURFACE_TYPE_TRANSPARENT
@@ -41,11 +41,11 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _BaseMap:
-        m_Texture: {fileID: 2800000, guid: 43d0063237c647940bfd03dbdeef24c4, type: 3}
+        m_Texture: {fileID: 2800000, guid: c7f4af9566e9fc44c8c94052c0ad0aa3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MainTex:
-        m_Texture: {fileID: 2800000, guid: 43d0063237c647940bfd03dbdeef24c4, type: 3}
+        m_Texture: {fileID: 2800000, guid: c7f4af9566e9fc44c8c94052c0ad0aa3, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []

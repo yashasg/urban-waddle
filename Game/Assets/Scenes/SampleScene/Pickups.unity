@@ -155,7 +155,7 @@ MonoBehaviour:
   pickupShield: {fileID: 6987611029619408606, guid: c4904466caedd8a4fbd37efca156fb6a, type: 3}
   pickupBolt: {fileID: 6346757391923755691, guid: 004d7611c8bd3ec4fafee78270b6338f, type: 3}
   powerupShield: {fileID: 1551806569719739581, guid: 1c286bcee1a71844d8c10f37c10aa28d, type: 3}
-  powerupBolt: {fileID: 0}
+  powerupBolt: {fileID: 6346757391923755691, guid: 004d7611c8bd3ec4fafee78270b6338f, type: 3}
   pickupSpawnProbability: 30
 --- !u!4 &2138898892
 Transform:

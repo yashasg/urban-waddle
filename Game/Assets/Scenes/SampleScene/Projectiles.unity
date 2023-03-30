@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bullet: {fileID: 1245215546607549528, guid: a2d9c89de8d94614eb12605814bfd612, type: 3}
-  missle: {fileID: 0}
+  missle: {fileID: 1245215546607549528, guid: c97fb208e341c794596056ac31ad086a, type: 3}
   ufoBullet: {fileID: 1245215546607549528, guid: 9f4981772494d9b41b905df24050467b, type: 3}
   timeBetweenPlayerProjectilesMS: 100
   timeBetweenUfoProjectilesMS: 250
