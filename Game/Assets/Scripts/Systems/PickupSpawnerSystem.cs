@@ -84,7 +84,7 @@ namespace Sandbox.Asteroids
                 }
 
                 var randomPickup = random.NextBool() ? spawner.pickupShield : spawner.pickupBolt;
-                var pickup = EntityManager.Instantiate(spawner.pickupShield);
+                var pickup = EntityManager.Instantiate(randomPickup);
                 Dependency = new PickupSpawnerSystemPickupPlacementJob
                 {
                     localTransformLookup = GetComponentLookup<LocalTransform>(),

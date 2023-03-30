@@ -50,8 +50,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff27b6aa3b14b2444bd76ee552135285, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bulletType: 0
-  owner: 1
+  bulletType: 1
+  owner: 0
 --- !u!114 &4414164739218612880
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -135,7 +135,7 @@ MonoBehaviour:
   m_ShapeType: 2
   m_PrimitiveCenter:
     x: 0
-    y: 0.3
+    y: 0
     z: 0
   m_PrimitiveSize:
     x: 0.2
@@ -183,10 +183,10 @@ MonoBehaviour:
     m_BelongsToCategories:
       m_Override: 0
       m_Value:
-        Category00: 0
+        Category00: 1
         Category01: 0
         Category02: 0
-        Category03: 1
+        Category03: 0
         Category04: 0
         Category05: 0
         Category06: 0
@@ -218,8 +218,8 @@ MonoBehaviour:
     m_CollidesWithCategories:
       m_Override: 0
       m_Value:
-        Category00: 1
-        Category01: 0
+        Category00: 0
+        Category01: 1
         Category02: 0
         Category03: 0
         Category04: 0

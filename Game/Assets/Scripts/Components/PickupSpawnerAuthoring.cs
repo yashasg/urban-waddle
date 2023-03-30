@@ -9,7 +9,6 @@ namespace Sandbox.Asteroids
         public GameObject pickupShield;
         public GameObject pickupBolt;
         public GameObject powerupShield;
-        public GameObject powerupBolt;
 
         public int pickupSpawnProbability;
 
@@ -22,7 +21,6 @@ namespace Sandbox.Asteroids
                     pickupShield = GetEntity(authoring.pickupShield),
                     pickupBolt = GetEntity(authoring.pickupBolt),
                     powerupShield = GetEntity(authoring.powerupShield),
-                    powerupBolt = GetEntity(authoring.powerupBolt),
 
                     pickupSpawnProbability = authoring.pickupSpawnProbability,
                 });
@@ -38,7 +36,6 @@ namespace Sandbox.Asteroids
         public Entity pickupShield;
         public Entity pickupBolt;
         public Entity powerupShield;
-        public Entity powerupBolt;
 
         public int pickupSpawnProbability;
 
