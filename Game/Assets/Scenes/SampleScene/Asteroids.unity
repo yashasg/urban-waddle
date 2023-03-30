@@ -164,7 +164,7 @@ MonoBehaviour:
     width: 2
     height: 2
   asteroidCountPerSession: 4
-  ufoSpawnSessionCount: 3
+  ufoSpawnSessionCount: 0
 --- !u!4 &2010021185
 Transform:
   m_ObjectHideFlags: 0

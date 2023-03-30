@@ -19,21 +19,17 @@ namespace Sandbox.Asteroids
             [ReadOnly]
             public float3 turretOffset;
             [ReadOnly]
-            public Entity shipEntity;
+            public float3 shipPosition;
+            [ReadOnly]
+            public quaternion shipRotation;
             [ReadOnly]
             public Entity spawnedProjectile;
 
             public void Execute()
             {
-                LocalTransform shipLocalTransform = localTransformLookup[shipEntity];
-                float3 playerPos = shipLocalTransform.Position;
-                quaternion playerRot = shipLocalTransform.Rotation;
-
-                float3 projectileDir = math.mul(playerRot,math.up()); //get the direction based on the player rotation
-
-              
-                float3 projectilePos = playerPos + (projectileDir * turretOffset.y);
-                var TRS = float4x4.TRS(projectilePos, playerRot, math.float3(1.0f));
+                float3 projectileDir = math.mul(shipRotation,math.up()); //get the direction based on the player rotation 
+                float3 projectilePos = shipPosition + (projectileDir * turretOffset.y);
+                var TRS = float4x4.TRS(projectilePos, shipRotation, math.float3(1.0f));
 
                 localTransformLookup[spawnedProjectile] = LocalTransform.FromMatrix(TRS);
 
@@ -50,6 +46,7 @@ namespace Sandbox.Asteroids
         private EntityQuery ufoQuery;
         private int remainingTimeSincePlayerProjectileMS;
         private int remainingTimeSinceUfoProjectileMS;
+        private int ufoProjectileSpawnCount = 0;
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -116,12 +113,15 @@ namespace Sandbox.Asteroids
                 Entity spawnedProjectile = EntityManager.Instantiate(spawner.bullet);
 
                 //update the position of the spawned entities
+                ComponentLookup<LocalTransform> transformLookup = GetComponentLookup<LocalTransform>();
+                var localPlayerTransform = transformLookup[localPlayer];
                 Dependency = new ProjectileSpawnerSystemPlacementJob
                 {
-                    localTransformLookup = GetComponentLookup<LocalTransform>(),
+                    localTransformLookup = transformLookup,
                     movementLookup = GetComponentLookup<Movement>(),
                     turretOffset = GetComponentLookup<PlayerShip>()[localPlayer].turretOffset,
-                    shipEntity = localPlayer,
+                    shipPosition = localPlayerTransform.Position,
+                    shipRotation = localPlayerTransform.Rotation,
                     spawnedProjectile = spawnedProjectile
 
                 }.Schedule(Dependency);
@@ -149,9 +149,7 @@ namespace Sandbox.Asteroids
                 //we are not ready to shoot yet
                 return;
             }
-
-
-            var transformLookup = GetComponentLookup<LocalTransform>();
+            ufoProjectileSpawnCount = (ufoProjectileSpawnCount + 1) % 4;
             for (int i = 0; i < ufos.Length; ++i)
             {
                 var ufo = ufos[i];
@@ -167,13 +165,17 @@ namespace Sandbox.Asteroids
                     //spawn entities
                     Entity spawnedProjectile = EntityManager.Instantiate(spawner.ufoBullet);
 
+                    ComponentLookup<LocalTransform> transformLookup = GetComponentLookup<LocalTransform>();
+                    var ufoTransform = transformLookup[ufo];
+                    var spawnDir = GetSpawnDirection(ufoProjectileSpawnCount);
                     //update the position of the spawned entities
                     Dependency = new ProjectileSpawnerSystemPlacementJob
                     {
                         localTransformLookup = GetComponentLookup<LocalTransform>(),
                         movementLookup = GetComponentLookup<Movement>(),
                         turretOffset = math.up(),
-                        shipEntity = ufo,
+                        shipPosition = ufoTransform.Position,
+                        shipRotation = quaternion.LookRotationSafe(math.forward(), spawnDir),
                         spawnedProjectile = spawnedProjectile
 
                     }.Schedule(Dependency);
@@ -181,6 +183,27 @@ namespace Sandbox.Asteroids
 
             }
 
+        }
+
+        private float3 GetSpawnDirection(int index)
+        {
+            if(index == 0)
+            {
+                return math.up();
+            }
+            if (index == 1)
+            {
+                return math.right();
+            }
+            if (index == 2)
+            {
+                return math.left();
+            }
+            if (index == 3)
+            {
+                return math.down();
+            }
+            return math.up();
         }
     }
 }

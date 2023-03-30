@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 5488678263990007759}
   - component: {fileID: 868852044593092019}
   - component: {fileID: -7376346922645524192}
+  - component: {fileID: -9097125463655587497}
   m_Layer: 0
   m_Name: Ufo
   m_TagString: Untagged
@@ -311,3 +312,18 @@ MonoBehaviour:
     y: 0
   speed: 4
   turnSpeed: 0.1
+--- !u!114 &-9097125463655587497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2204473776803347226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf73ac3ee0789eb42b0fe3c6a35cd710, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  health: 100
+  points: 30
+  attackDamage: 10
