@@ -65,7 +65,6 @@ namespace Sandbox.Asteroids
 
                 Movement projectileMovement = movementLookup[spawnedProjectile];
 
-
                 float3 projectilePos = shipPosition ;
                 float3 direction = asteroidPos - shipPosition;
                 float T = math.length(direction) / projectileMovement.speed;
